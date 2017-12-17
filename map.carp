@@ -1,4 +1,5 @@
 (use Array)
+
 (definterface hash (Fn [a] Int))
 
 (defmodule String
@@ -47,4 +48,11 @@
   (defn get [m k]
     (let [idx (Int.mod (hash k) (Map.n-buckets m))]
       (search (nth (Map.buckets m) idx) k (Map.dflt m))))
+
+  (defn for-each [m f]
+    (for [i 0 (Map.n-buckets m)]
+      (let [bucket (nth (Map.buckets m) i)]
+        (for [j 0 (count bucket)]
+          (let [e (nth bucket j)]
+            (f (Entry.key e) (Entry.value e)))))))
 )
