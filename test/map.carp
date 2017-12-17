@@ -1,0 +1,15 @@
+(load "map.carp")
+(use Map)
+
+(load "Test.carp")
+(use Test)
+
+(defn main []
+  (let [m (Map.create 16)]
+    (with-test test
+      (assert-equal test
+                    "2"
+                    &(Map.get &(Map.put m "1" "2") "1")
+                    "basic put and get works"
+      )
+      (print-test-results test))))

@@ -1,0 +1,50 @@
+(use Array)
+(definterface hash (Fn [a] Int))
+
+(defmodule String
+  (defn rehash [k l]
+    (let-do [a 31415
+             b 27183
+             vh 0]
+      (for [x 0 (count k)]
+        (do
+          (set! &vh (+ (* a (* vh l)) (Char.to-int (char-at @k x))))
+          (set! &a (* a b))
+          (set! &x (Int.inc x))))
+      vh))
+
+  (defn hash [k]
+    (rehash k 1))
+)
+
+
+(deftype Entry [key String value String])
+(deftype Map [dflt String n-buckets Int buckets (Array (Array Entry))])
+
+(defmodule Map
+  (defn create [n-buckets]
+    (Map.init @"" n-buckets (replicate n-buckets &[])))
+
+  (defn create-default [n-buckets dflt]
+    (Map.init dflt n-buckets (replicate n-buckets &[])))
+
+  (defn put [m k v]
+    (let [idx (Int.mod (hash k) (Map.n-buckets &m))
+          buckets (Map.buckets &m)]
+      (Map.set-buckets m (aset @buckets
+                               idx
+                               (push-back @(nth buckets idx) (Entry.init @k @v))))))
+
+  (defn search [b k d]
+    (let-do [e d]
+      (for [i 0 (count b)]
+        (when (= (Entry.key (nth b i)) k)
+          (do
+            (set! &e (Entry.value (nth b i)))
+            (break))))
+       @e))
+
+  (defn get [m k]
+    (let [idx (Int.mod (hash k) (Map.n-buckets m))]
+      (search (nth (Map.buckets m) idx) k (Map.dflt m))))
+)
