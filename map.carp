@@ -9,7 +9,7 @@
              vh 0]
       (for [x 0 (count k)]
         (do
-          (set! &vh (+ (* a (* vh l)) (Char.to-int (char-at @k x))))
+          (set! &vh (+ (* a (* vh l)) (Char.to-int (char-at k x))))
           (set! &a (* a b))
           (set! &x (Int.inc x))))
       vh))
@@ -20,39 +20,103 @@
 
 
 (deftype Entry [key String value String])
-(deftype Map [dflt String n-buckets Int buckets (Array (Array Entry))])
+(deftype Bucket [length Int, entries (Array Entry)])
 
-(defmodule Map
-  (defn create [n-buckets]
-    (Map.init @"" n-buckets (replicate n-buckets &[])))
+(defmodule Bucket
+  (defn empty []
+    (Bucket.init 0 []))
 
-  (defn create-default [n-buckets dflt]
-    (Map.init dflt n-buckets (replicate n-buckets &[])))
+  (defn grow [b e]
+    (=> @b
+        (update-length Int.inc)
+        (set-entries (push-back @(entries b) e))))
 
-  (defn put [m k v]
-    (let [idx (Int.mod (hash k) (Map.n-buckets &m))
-          buckets (Map.buckets &m)]
-      (Map.set-buckets m (aset @buckets
-                               idx
-                               (push-back @(nth buckets idx) (Entry.init @k @v))))))
-
-  (defn search [b k d]
-    (let-do [e d]
-      (for [i 0 (count b)]
-        (when (= (Entry.key (nth b i)) k)
+  (defn get [b k d]
+    (let-do [e d
+             len (length b)
+             es (entries b)]
+      (for [i 0 len]
+        (when (= (Entry.key (nth es i)) k)
           (do
-            (set! &e (Entry.value (nth b i)))
+            (set! &e (Entry.value (nth es i)))
             (break))))
        @e))
 
+  (defn contains? [b k]
+    (let-do [e false
+             len (length b)
+             es (entries b)]
+      (for [i 0 len]
+        (when (= (Entry.key (nth es i)) k)
+          (do
+            (set! &e true)
+            (break))))
+       e))
+
+  (defn remove [entries k]
+    (let-do [nentries (the (Array Entry) [])]
+      (for [i 0 (count entries)]
+        (let [e (nth entries i)]
+          (unless (= (Entry.key e) k)
+            (set! &nentries (push-back @&nentries @e)))))
+      nentries))
+
+  (defn shrink [b k]
+    (if (contains? b k)
+      (=> @b
+          (update-length Int.dec)
+          (set-entries (remove (entries b) k)))
+      @b))
+
+)
+
+(deftype Map [dflt String n-buckets Int buckets (Array Bucket)])
+
+(defmodule Map
+  (defn create [n-buckets]
+    (init @"" n-buckets (repeat n-buckets Bucket.empty)))
+
+  (defn create-default [n-buckets dflt]
+    (init dflt n-buckets (repeat n-buckets Bucket.empty)))
+
+  (defn put [m k v]
+    (let [idx (Int.mod (hash k) (n-buckets &m))
+          b (buckets &m)]
+      (set-buckets m (aset @b
+                           idx
+                           (Bucket.grow (nth b idx) (Entry.init @k @v))))))
+
   (defn get [m k]
-    (let [idx (Int.mod (hash k) (Map.n-buckets m))]
-      (search (nth (Map.buckets m) idx) k (Map.dflt m))))
+    (let [idx (Int.mod (hash k) (n-buckets m))]
+      (Bucket.get (nth (buckets m) idx) k (dflt m))))
+
+  (defn count [m]
+    (let-do [c 0]
+      (for [i 0 (n-buckets m)]
+        (set! &c (+ c (Bucket.length (nth (buckets m) i)))))
+      c))
+
+  (defn empty? [m]
+    (= (count m) 0))
+
+  (defn contains? [m k]
+    (let [idx (Int.mod (hash k) (n-buckets m))]
+      (Bucket.contains? (nth (buckets m) idx) k)))
+
+  (defn remove [m k]
+    (let [idx (Int.mod (hash k) (n-buckets &m))
+          b (buckets &m)]
+      (set-buckets m (aset @b
+                           idx
+                           (Bucket.shrink (nth b idx) k)))))
+
 
   (defn for-each [m f]
-    (for [i 0 (Map.n-buckets m)]
-      (let [bucket (nth (Map.buckets m) i)]
-        (for [j 0 (count bucket)]
-          (let [e (nth bucket j)]
+    (for [i 0 (n-buckets m)]
+      (let [bucket (nth (buckets m) i)
+            len (Bucket.length bucket)
+            entries (Bucket.entries bucket)]
+        (for [j 0 len]
+          (let [e (nth entries j)]
             (f (Entry.key e) (Entry.value e)))))))
 )

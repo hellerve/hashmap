@@ -5,11 +5,45 @@
 (use Test)
 
 (defn main []
-  (let [m (Map.create 16)]
-    (with-test test
-      (assert-equal test
-                    "2"
-                    &(Map.get &(Map.put m "1" "2") "1")
-                    "basic put and get works"
-      )
-      (print-test-results test))))
+  (with-test test
+    (assert-equal test
+                  "2"
+                  &(Map.get &(Map.put (Map.create 16) "1" "2") "1")
+                  "basic put and get works"
+    )
+    (assert-equal test
+                  1
+                  (Map.count &(Map.put (Map.create 16) "1" "2"))
+                  "length works"
+    )
+    (assert-equal test
+                  0
+                  (Map.count &(Map.create 1024))
+                  "length works on empty map"
+    )
+    (assert-equal test
+                  false
+                  (Map.contains? &(Map.create 1024) "1")
+                  "contains? works on empty map"
+    )
+    (assert-equal test
+                  true
+                  (Map.contains? &(Map.put (Map.create 1024) "1" "2") "1")
+                  "contains? works"
+    )
+    (assert-equal test
+                  true
+                  (Map.empty? &(Map.create 1024))
+                  "empty? works on empty map"
+    )
+    (assert-equal test
+                  false
+                  (Map.empty? &(Map.put (Map.create 1024) "1" "2"))
+                  "empty? works"
+    )
+    (assert-equal test
+                  true
+                  (Map.empty? &(Map.remove (Map.put (Map.create 16) "1" "2") "1"))
+                  "remove works"
+    )
+    (print-test-results test))))
