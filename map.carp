@@ -19,8 +19,8 @@
 )
 
 
-(deftype Entry [key String value String])
-(deftype Bucket [length Int, entries (Array Entry)])
+(deftype (Entry a b) [key a value b])
+(deftype (Bucket a b) [length Int, entries (Array (Entry a b))])
 
 (defmodule Bucket
   (defn empty []
@@ -70,7 +70,7 @@
 
 )
 
-(deftype Map [dflt String n-buckets Int buckets (Array Bucket)])
+(deftype (Map a b) [dflt String n-buckets Int buckets (Array (Bucket a b))])
 
 (defmodule Map
   (defn create [n-buckets]
