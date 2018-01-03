@@ -18,6 +18,29 @@
     (rehash k 1))
 )
 
+(defmodule Int
+  (defn hash [k] k)
+)
+
+(defmodule Long
+  (defn hash [k] (to-int k))
+)
+
+(defmodule Bool
+  (defn hash [k] (if k 1 0))
+)
+
+(defmodule Char
+  (defn hash [k] (to-int k))
+)
+
+(defmodule Float
+  (defn hash [k] ())
+)
+
+(defmodule Double
+  (defn hash [k] ())
+)
 
 (deftype (Entry a b) [key a value b])
 (deftype (Bucket a b) [length Int, entries (Array (Entry a b))])
