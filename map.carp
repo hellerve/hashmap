@@ -35,11 +35,11 @@
 )
 
 (defmodule Float
-  (defn hash [k] ())
+  (defn hash [k] 0)
 )
 
 (defmodule Double
-  (defn hash [k] ())
+  (defn hash [k] 0)
 )
 
 (deftype (Entry a b) [key a value b])
