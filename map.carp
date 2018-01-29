@@ -77,7 +77,7 @@
        e))
 
   (defn remove [entries k]
-    (let-do [nentries (the (Array Entry) [])]
+    (let-do [nentries (the (Array (Entry a b)) [])]
       (for [i 0 (count entries)]
         (let [e (nth entries i)]
           (unless (= (Entry.key e) k)

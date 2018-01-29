@@ -18,12 +18,12 @@
     )
     (assert-equal test
                   0
-                  (Map.count &(Map.create 1024))
+                  (Map.count &(the (Map.Map Int Int) (Map.create 1024)))
                   "length works on empty map"
     )
     (assert-equal test
                   false
-                  (Map.contains? &(Map.create 1024) "1")
+                  (Map.contains? &(the (Map.Map String Int) (Map.create 1024)) "1")
                   "contains? works on empty map"
     )
     (assert-equal test
@@ -33,7 +33,7 @@
     )
     (assert-equal test
                   true
-                  (Map.empty? &(Map.create 1024))
+                  (Map.empty? &(the (Map Int Int) (Map.create 1024)))
                   "empty? works on empty map"
     )
     (assert-equal test
