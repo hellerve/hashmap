@@ -1,3 +1,5 @@
+(load "Debug.carp")
+(Debug.sanitize-addresses)
 (load "map.carp")
 (use Map)
 
@@ -46,4 +48,22 @@
                   (Map.empty? &(Map.remove (Map.put (Map.create 16) "1" "2") "1"))
                   "remove works"
     )
+    (let-do [m (Map.create 1)]
+      (for [i 0 200]
+        (set! &m (Map.put m &(str i) &(str i))))
+      (for [i 0 200]
+        (set! &m (Map.remove m &(str i))))
+      (assert-equal test
+                    0
+                    (Map.count &m)
+                    "resizing repeatedly works"))
+    (let-do [m (Map.create 4)]
+      (for [i 0 200]
+        (set! &m (Map.put m &(str i) &(str i))))
+      (for [i 0 200]
+        (set! &m (Map.remove m &(str i))))
+      (assert-equal test
+                    0
+                    (Map.count &m)
+                    "resizing multi-bucket repeatedly works"))
     (print-test-results test))))
