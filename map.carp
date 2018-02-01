@@ -43,16 +43,27 @@
 )
 
 (deftype (Entry a b) [key a value b])
-(deftype (Bucket a b) [length Int, entries (Array (Entry a b))])
+(deftype (Bucket a b) [capacity Int, length Int, entries (Array (Entry a b))])
 
 (defmodule Bucket
   (defn empty []
-    (Bucket.init 0 []))
+    (Bucket.init 8 0 (Array.allocate 8)))
+
+  (defn growth-fn [b]
+    (if (= (length &b) (capacity &b))
+      (let-do [new-entries (Array.allocate (* 2 @(capacity &b)))]
+        (for [i 0 @(length &b)]
+          (aset! &new-entries i @(nth (entries &b) i)))
+        (=> @&b
+            (set-capacity (* 2 @(capacity &b)))
+            (set-entries new-entries)))
+      b))
 
   (defn grow [b e]
     (=> @b
-        (update-length Int.inc)
-        (set-entries (push-back @(entries b) e))))
+        (growth-fn)
+        (set-entries (aset @(entries b) @(length b) e))
+        (update-length Int.inc)))
 
   (defn get [b k d]
     (let-do [e d
@@ -76,19 +87,30 @@
             (break))))
        e))
 
-  (defn remove [entries k]
-    (let-do [nentries (the (Array (Entry a b)) [])]
+  (defn remove [entries capacity k]
+    (let-do [nentries (Array.allocate capacity)]
       (for [i 0 (count entries)]
         (let [e (nth entries i)]
           (unless (= (Entry.key e) k)
-            (set! &nentries (push-back @&nentries @e)))))
+            (aset! &nentries i @(nth entries i)))))
       nentries))
+
+  (defn shrink-fn [b]
+    (if (< @(length &b) (/ @(capacity &b) 4))
+      (let-do [new-entries (Array.allocate (/ @(capacity &b) 2))]
+        (for [i 0 @(length &b)]
+          (aset! &new-entries i @(nth (entries &b) i)))
+        (=> @&b
+            (set-capacity (/ @(capacity &b) 2))
+            (set-entries new-entries)))
+      b))
 
   (defn shrink [b k]
     (if (contains? b k)
       (=> @b
-          (update-length Int.dec)
-          (set-entries (remove (entries b) k)))
+          (shrink-fn)
+          (set-entries (remove (entries b) @(capacity b) k))
+          (update-length Int.dec))
       @b))
 
 )
