@@ -9,9 +9,9 @@
              vh 0]
       (for [x 0 (count k)]
         (do
-          (set! &vh (+ (* a (* vh l)) (Char.to-int (char-at k x))))
-          (set! &a (* a b))
-          (set! &x (Int.inc x))))
+          (set! vh (+ (* a (* vh l)) (Char.to-int (char-at k x))))
+          (set! a (* a b))
+          (set! x (Int.inc x))))
       (Int.abs vh)))
 
   (defn hash [k]
@@ -75,7 +75,7 @@
       (for [i 0 len]
         (when (= (Entry.key (nth es i)) k)
           (do
-            (set! &e (Entry.value (nth es i)))
+            (set! e (Entry.value (nth es i)))
             (break))))
        @e))
 
@@ -86,7 +86,7 @@
       (for [i 0 len]
         (when (= (Entry.key (nth es i)) k)
           (do
-            (set! &e true)
+            (set! e true)
             (break))))
        e))
 
@@ -98,7 +98,7 @@
           (unless (= (Entry.key e) k)
             (do
               (aset! &nentries w @e)
-              (set! &w (Int.inc w))))))
+              (set! w (Int.inc w))))))
       nentries))
 
   (defn shrink-fn [b]
@@ -144,7 +144,7 @@
   (defn count [m]
     (let-do [c 0]
       (for [i 0 @(n-buckets m)]
-        (set! &c (+ c @(Bucket.length (nth (buckets m) i)))))
+        (set! c (+ c @(Bucket.length (nth (buckets m) i)))))
       c))
 
   (defn empty? [m]
