@@ -10,45 +10,45 @@
   (with-test test
     (assert-equal test
                   "2"
-                  &(Map.get &(Map.put (Map.create 16) "1" "2") "1")
+                  &(Map.get &(Map.put (Map.create 16 @"") "1" "2") "1")
                   "basic put and get works"
     )
     (assert-equal test
                   1
-                  (Map.count &(Map.put (Map.create 16) "1" "2"))
+                  (Map.count &(Map.put (Map.create 16 @"") "1" "2"))
                   "length works"
     )
     (assert-equal test
                   0
-                  (Map.count &(the (Map.Map Int Int) (Map.create 1024)))
+                  (Map.count &(the (Map.Map Int Int) (Map.create 1024 0)))
                   "length works on empty map"
     )
     (assert-equal test
                   false
-                  (Map.contains? &(the (Map.Map String Int) (Map.create 1024)) "1")
+                  (Map.contains? &(the (Map.Map String Int) (Map.create 1024 0)) "1")
                   "contains? works on empty map"
     )
     (assert-equal test
                   true
-                  (Map.contains? &(Map.put (Map.create 1024) "1" "2") "1")
+                  (Map.contains? &(Map.put (Map.create 1024 @"") "1" "2") "1")
                   "contains? works"
     )
     (assert-equal test
                   true
-                  (Map.empty? &(the (Map Int Int) (Map.create 1024)))
+                  (Map.empty? &(the (Map Int Int) (Map.create 1024 0)))
                   "empty? works on empty map"
     )
     (assert-equal test
                   false
-                  (Map.empty? &(Map.put (Map.create 1024) "1" "2"))
+                  (Map.empty? &(Map.put (Map.create 1024 @"") "1" "2"))
                   "empty? works"
     )
     (assert-equal test
                   true
-                  (Map.empty? &(Map.remove (Map.put (Map.create 16) "1" "2") "1"))
+                  (Map.empty? &(Map.remove (Map.put (Map.create 16 @"") "1" "2") "1"))
                   "remove works"
     )
-    (let-do [m (Map.create 1)]
+    (let-do [m (Map.create 1 @"")]
       (for [i 0 200]
         (set! m (Map.put m &(str i) &(str i))))
       (for [i 0 200]
@@ -57,7 +57,7 @@
                     0
                     (Map.count &m)
                     "resizing repeatedly works"))
-    (let-do [m (Map.create 4)]
+    (let-do [m (Map.create 4 @"")]
       (for [i 0 200]
         (set! m (Map.put m &(str i) &(str i))))
       (for [i 0 200]
@@ -65,5 +65,58 @@
       (assert-equal test
                     0
                     (Map.count &m)
+                    "resizing multi-bucket repeatedly works"))
+    (assert-equal test
+                  1
+                  (Set.count &(Set.put (Set.create 16) "1"))
+                  "length works"
+    )
+    (assert-equal test
+                  0
+                  (Set.count &(the (Set.Set Int) (Set.create 1024)))
+                  "length works on empty map"
+    )
+    (assert-equal test
+                  false
+                  (Set.contains? &(the (Set.Set String) (Set.create 1024)) "1")
+                  "contains? works on empty map"
+    )
+    (assert-equal test
+                  true
+                  (Set.contains? &(Set.put (Set.create 1024) "1") "1")
+                  "contains? works"
+    )
+    (assert-equal test
+                  true
+                  (Set.empty? &(the (Set Int) (Set.create 1024)))
+                  "empty? works on empty map"
+    )
+    (assert-equal test
+                  false
+                  (Set.empty? &(Set.put (Set.create 1024) "1"))
+                  "empty? works"
+    )
+    (assert-equal test
+                  true
+                  (Set.empty? &(Set.remove (Set.put (Set.create 16) "1") "1"))
+                  "remove works"
+    )
+    (let-do [m (Set.create 1)]
+      (for [i 0 200]
+        (set! m (Set.put m &(str i))))
+      (for [i 0 200]
+        (set! m (Set.remove m &(str i))))
+      (assert-equal test
+                    0
+                    (Set.count &m)
+                    "resizing repeatedly works"))
+    (let-do [m (Set.create 4)]
+      (for [i 0 200]
+        (set! m (Set.put m &(str i))))
+      (for [i 0 200]
+        (set! m (Set.remove m &(str i))))
+      (assert-equal test
+                    0
+                    (Set.count &m)
                     "resizing multi-bucket repeatedly works"))
     (print-test-results test))))
