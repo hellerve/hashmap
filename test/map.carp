@@ -15,12 +15,12 @@
     )
     (assert-equal test
                   1
-                  (Map.count &(Map.put (Map.create 16 @"") "1" "2"))
+                  (Map.length &(Map.put (Map.create 16 @"") "1" "2"))
                   "length works"
     )
     (assert-equal test
                   0
-                  (Map.count &(the (Map.Map Int Int) (Map.create 1024 0)))
+                  (Map.length &(the (Map.Map Int Int) (Map.create 1024 0)))
                   "length works on empty map"
     )
     (assert-equal test
@@ -55,7 +55,7 @@
         (set! m (Map.remove m &(str i))))
       (assert-equal test
                     0
-                    (Map.count &m)
+                    (Map.length &m)
                     "resizing repeatedly works"))
     (let-do [m (Map.create 4 @"")]
       (for [i 0 200]
@@ -64,16 +64,16 @@
         (set! m (Map.remove m &(str i))))
       (assert-equal test
                     0
-                    (Map.count &m)
+                    (Map.length &m)
                     "resizing multi-bucket repeatedly works"))
     (assert-equal test
                   1
-                  (Set.count &(Set.put (Set.create 16) "1"))
+                  (Set.length &(Set.put (Set.create 16) "1"))
                   "length works"
     )
     (assert-equal test
                   0
-                  (Set.count &(the (Set.Set Int) (Set.create 1024)))
+                  (Set.length &(the (Set.Set Int) (Set.create 1024)))
                   "length works on empty map"
     )
     (assert-equal test
@@ -108,7 +108,7 @@
         (set! m (Set.remove m &(str i))))
       (assert-equal test
                     0
-                    (Set.count &m)
+                    (Set.length &m)
                     "resizing repeatedly works"))
     (let-do [m (Set.create 4)]
       (for [i 0 200]
@@ -117,6 +117,6 @@
         (set! m (Set.remove m &(str i))))
       (assert-equal test
                     0
-                    (Set.count &m)
+                    (Set.length &m)
                     "resizing multi-bucket repeatedly works"))
     (print-test-results test))))
