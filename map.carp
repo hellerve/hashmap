@@ -43,20 +43,18 @@
 )
 
 (deftype (Entry a b) [key a value b])
-(deftype (Bucket a b) [len Int, entries (Array (Entry a b))])
+(deftype (Bucket a b) [entries (Array (Entry a b))])
 
 (defmodule Bucket
   (defn empty []
-    (Bucket.init 0 []))
+    (Bucket.init []))
 
   (defn grow [b e]
-    (=> @b
-        (set-entries (push-back @(entries b) e))
-        (update-len Int.inc)))
+    (set-entries @b (push-back @(entries b) e)))
 
   (defn get [b k d]
     (let-do [e d
-             l @(len b)
+             l (length (Bucket.entries b))
              es (entries b)]
       (for [i 0 l]
         (when (= (Entry.key (nth es i)) k)
@@ -67,7 +65,7 @@
 
   (defn contains? [b k]
     (let-do [e false
-             l @(len b)
+             l (length (Bucket.entries b))
              es (entries b)]
       (for [i 0 l]
         (when (= (Entry.key (nth es i)) k)
@@ -86,9 +84,7 @@
 
   (defn shrink [b k]
     (if (contains? b k)
-      (=> @b
-          (update-len Int.dec)
-          (set-entries (remove (entries b) k)))
+      (set-entries @b (remove (entries b) k))
       @b))
 )
 
@@ -112,7 +108,7 @@
   (defn length [m]
     (let-do [c 0]
       (for [i 0 @(n-buckets m)]
-        (set! c (+ c @(Bucket.len (nth (buckets m) i)))))
+        (set! c (+ c (Array.length (Bucket.entries (nth (buckets m) i))))))
       c))
 
   (defn empty? [m]
@@ -133,7 +129,7 @@
   (defn for-each [m f]
     (for [i 0 @(n-buckets m)]
       (let [bucket (nth (buckets m) i)
-            len @(Bucket.len bucket)
+            len (length (Bucket.entries bucket))
             entries (Bucket.entries bucket)]
         (for [j 0 len]
           (let [e (nth entries j)]
@@ -156,7 +152,7 @@
   (defn length [m]
     (let-do [c 0]
       (for [i 0 @(n-buckets m)]
-        (set! c (+ c @(Bucket.len (nth (buckets m) i)))))
+        (set! c (+ c (Array.length (Bucket.entries (nth (buckets m) i))))))
       c))
 
   (defn empty? [m]
@@ -177,7 +173,7 @@
   (defn for-each [m f]
     (for [i 0 @(n-buckets m)]
       (let [bucket (nth (buckets m) i)
-            len @(Bucket.len bucket)
+            len (length (Bucket.entries bucket))
             entries (Bucket.entries bucket)]
         (for [j 0 len]
           (let [e (nth entries j)]
