@@ -1,6 +1,6 @@
 (use Array)
 
-(definterface hash (Fn [a] Int))
+(definterface hash (Fn [(Ref a)] Int))
 
 (defmodule String
   (defn rehash [k l]
@@ -19,27 +19,27 @@
 )
 
 (defmodule Int
-  (defn hash [k] k)
+  (defn hash [k] (the Int @k))
 )
 
 (defmodule Long
-  (defn hash [k] (to-int k))
+  (defn hash [k] (to-int (the Long @k)))
 )
 
 (defmodule Bool
-  (defn hash [k] (if k 1 0))
+  (defn hash [k] (if (the Bool @k) 1 0))
 )
 
 (defmodule Char
-  (defn hash [k] (to-int k))
+  (defn hash [k] (to-int (the Char @k)))
 )
 
 (defmodule Float
-  (defn hash [k] 0)
+  (defn hash [k] (to-bytes @k))
 )
 
 (defmodule Double
-  (defn hash [k] 0)
+  (defn hash [k] (Long.to-int (to-bytes @k)))
 )
 
 (deftype (Entry a b) [key a value b])
@@ -52,8 +52,8 @@
   (defn grow [b e]
     (set-entries @b (push-back @(entries b) e)))
 
-  (defn get [b k d]
-    (let-do [e d
+  (defn get [b k]
+    (let-do [e &(zero)
              l (length (Bucket.entries b))
              es (entries b)]
       (for [i 0 l]
@@ -88,11 +88,11 @@
       @b))
 )
 
-(deftype (Map a b) [dflt b n-buckets Int buckets (Array (Bucket a b))])
+(deftype (Map a b) [n-buckets Int buckets (Array (Bucket a b))])
 
 (defmodule Map
-  (defn create [n-buckets dflt]
-    (init dflt n-buckets (repeat n-buckets Bucket.empty)))
+  (defn create [n-buckets]
+    (init n-buckets (repeat n-buckets Bucket.empty)))
 
   (defn put [m k v]
     (let [idx (Int.mod (hash k) @(n-buckets &m))
@@ -103,7 +103,7 @@
 
   (defn get [m k]
     (let [idx (Int.mod (hash k) @(n-buckets m))]
-      (Bucket.get (nth (buckets m) idx) k (dflt m))))
+      (Bucket.get (nth (buckets m) idx) k)))
 
   (defn length [m]
     (let-do [c 0]
@@ -125,7 +125,6 @@
                            idx
                            (Bucket.shrink (nth b idx) k)))))
 
-
   (defn for-each [m f]
     (for [i 0 @(n-buckets m)]
       (let [bucket (nth (buckets m) i)
@@ -134,6 +133,15 @@
         (for [j 0 len]
           (let [e (nth entries j)]
             (f (Entry.key e) (Entry.value e)))))))
+
+  (defn from-array [a]
+    (let-do [m (create (length a))]
+      (for [i 0 (length a)]
+        (let [e (nth a i)
+              k (Pair.a e)
+              v (Pair.b e)]
+          (set! m (put m k v))))
+      m))
 )
 
 (deftype (Set a) [n-buckets Int buckets (Array (Bucket a Bool))])
