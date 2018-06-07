@@ -91,8 +91,13 @@
 (deftype (Map a b) [n-buckets Int buckets (Array (Bucket a b))])
 
 (defmodule Map
-  (defn create [n-buckets]
-    (init n-buckets (repeat n-buckets Bucket.empty)))
+  (def dflt-len 256)
+
+  (defn create []
+    (init dflt-len (repeat dflt-len Bucket.empty)))
+
+  (defn create-with-len [len]
+    (init len (repeat len Bucket.empty)))
 
   (defn put [m k v]
     (let [idx (Int.mod (hash k) @(n-buckets &m))
@@ -135,7 +140,7 @@
             (f (Entry.key e) (Entry.value e)))))))
 
   (defn from-array [a]
-    (let-do [m (create (length a))]
+    (let-do [m (create)]
       (for [i 0 (length a)]
         (let [e (nth a i)
               k (Pair.a e)
@@ -147,8 +152,13 @@
 (deftype (Set a) [n-buckets Int buckets (Array (Bucket a Bool))])
 
 (defmodule Set
-  (defn create [n-buckets]
-    (init n-buckets (repeat n-buckets Bucket.empty)))
+  (def dflt-len 256)
+
+  (defn create []
+    (init dflt-len (repeat dflt-len Bucket.empty)))
+
+  (defn create-with-len [len]
+    (init len (repeat len Bucket.empty)))
 
   (defn put [m k]
     (let [idx (Int.mod (hash k) @(n-buckets &m))
@@ -186,4 +196,11 @@
         (for [j 0 len]
           (let [e (nth entries j)]
             (f (Entry.key e)))))))
+
+  (defn from-array [a]
+    (let-do [m (create)]
+      (for [i 0 (length a)]
+        (let [e (nth a i)]
+          (set! m (put m e))))
+      m))
 )
